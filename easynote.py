@@ -20,6 +20,47 @@ def add_note(note_text, name):
     except Exception as e:
         print(f"Error saving note: {e}")
 
+def delete_note():
+    os.makedirs(NOTES_DIR, exist_ok=True)
+    notes = sorted(os.listdir(NOTES_DIR))
+
+    if not notes:
+        print("No notes found to delete.")
+        return
+
+    print("Available notes:")
+    for idx, note in enumerate(notes, 1):
+        print(f"{idx}. {note}")
+
+    choice = input("Enter number OR filename to delete: ").strip()
+
+    # --- Nummer ---
+    if choice.isdigit():
+        idx = int(choice) - 1
+        if 0 <= idx < len(notes):
+            filename = os.path.join(NOTES_DIR, notes[idx])
+        else:
+            print("Invalid number.")
+            return
+    else:
+        # --- Name ---
+        if not choice.endswith(".txt"):
+            choice += ".txt"
+
+        filename = os.path.join(NOTES_DIR, choice)
+
+        if not os.path.exists(filename):
+            print("Note not found.")
+            return
+
+    # --- Sicherheitsabfrage ---
+    confirm = input(f"Delete '{os.path.basename(filename)}'? (y/N): ").strip().lower()
+    if confirm == "y":
+        os.remove(filename)
+        print("Note deleted.")
+    else:
+        print("Delete cancelled.")
+
 def open_note():
     os.makedirs(NOTES_DIR, exist_ok=True)
     notes = sorted(os.listdir(NOTES_DIR))
@@ -70,6 +111,7 @@ def show_help():
     print("  easynote -l   |   --list                  List all notes")
     print("  easynote -h   |   --help          Show this help message")
     print("  easynote -o   |   --open                     Open a note")
+    print("  easynote -r   |   --remove                 Delete a note")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -82,8 +124,10 @@ if __name__ == "__main__":
         show_help()
     elif cmd in ("-l", "--list"):
         list_notes()
-    elif cmd in ("open", "-o"):
+    elif cmd in ("--open", "-o"):
         open_note()
+    elif cmd in ("--remove", "-r"):
+        delete_note()
     else:
         
         if cmd in ("add", "-a"):
